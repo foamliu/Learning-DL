@@ -160,8 +160,8 @@ def tf_conv_net(drop_out=False, lrd=False):
                 print('Minibatch accuracy: %.1f%%' % accuracy(predictions, batch_labels))
                 print('Validation accuracy: %.1f%%' % accuracy(
                         valid_prediction.eval(), valid_labels))
-            if step % 50 == 0:
                 summary_writer.add_summary(summary, step)
+                
         print('Test accuracy: %.1f%%' % accuracy(test_prediction.eval(), test_labels))
 
 if __name__ == '__main__':
