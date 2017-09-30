@@ -29,6 +29,7 @@ plt.rcParams['font.sans-serif']=['Arial Unicode MS']
 def cleanse(content):
     content = content.replace('\n','')
     content = content.replace('\r','')
+    content = content.replace('\u3000','')
     content = content.replace(' ','')
     content = content.replace('\t','')
     return content
@@ -41,7 +42,7 @@ def load_file(folder):
     concat = u''
     for path in paths:
         with open(path, 'r', encoding='utf-8') as myfile:
-            print(path)
+            #print(path)
             content = myfile.read()
             concat += cleanse(content)
 
@@ -60,8 +61,12 @@ def read_data(concat):
 
 
 def build_dataset(words):
+    vocab = set(words)
+    vocab_size = len(vocab)
+    print('Vocabulary size %d' % vocab_size)
+
     count = [['UNK', -1]]
-    count.extend(collections.Counter(words).most_common(vocabulary_size - 1))
+    count.extend(collections.Counter(words).most_common(vocab_size))
     dictionary = dict()
     for word, _ in count:
         dictionary[word] = len(dictionary)
@@ -75,8 +80,8 @@ def build_dataset(words):
             unk_count = unk_count + 1
         data.append(index)
     count[0][1] = unk_count
-    reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys())) 
-    return data, count, dictionary, reverse_dictionary
+    reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
+    return data, count, dictionary, reverse_dictionary, vocab_size + 1
 
 
 def generate_batch(batch_size, num_skips, skip_window):
@@ -140,11 +145,11 @@ def tf_crow():
       
       # Variables.
       embeddings = tf.Variable(
-        tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0))
+        tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0))
       softmax_weights = tf.Variable(
-        tf.truncated_normal([vocabulary_size, embedding_size],
+        tf.truncated_normal([vocab_size, embedding_size],
                              stddev=1.0 / math.sqrt(embedding_size)))
-      softmax_biases = tf.Variable(tf.zeros([vocabulary_size]))
+      softmax_biases = tf.Variable(tf.zeros([vocab_size]))
       
       # Model.
       # Look up embeddings for inputs.
@@ -152,7 +157,7 @@ def tf_crow():
       # Compute the softmax loss, using a sample of the negative labels each time.
       loss = tf.reduce_mean(
         tf.nn.sampled_softmax_loss(weights=softmax_weights, biases=softmax_biases, inputs=embed,
-                                   labels=train_labels, num_sampled=num_sampled, num_classes=vocabulary_size))
+                                   labels=train_labels, num_sampled=num_sampled, num_classes=vocab_size))
     
       # Optimizer.
       # Note: The optimizer will optimize the softmax_weights AND the embeddings.
@@ -170,7 +175,8 @@ def tf_crow():
         normalized_embeddings, valid_dataset)
       similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))
       
-    num_steps = 100001
+    #num_steps = 100001
+    num_steps = 5000001
     
     with tf.Session(graph=graph) as session:
       tf.global_variables_initializer().run()
@@ -202,6 +208,9 @@ def tf_crow():
             print(log)
       final_embeddings = normalized_embeddings.eval()
       #print(final_embeddings)
+      import pandas as pd 
+      df = pd.DataFrame(final_embeddings)
+      df.to_csv("final_embeddings.csv")
       
       num_points = 400
 
@@ -221,9 +230,8 @@ if __name__ == '__main__':
     words = read_data(concat)
     print('Data size %d' % len(words))
     
-    vocabulary_size = 50000
-    data, count, dictionary, reverse_dictionary = build_dataset(words)
-    print('Most common words (+UNK)', count[:5])
+    data, count, dictionary, reverse_dictionary, vocab_size = build_dataset(words)
+    print('Most common words ', count[:10])
     print('Sample data', data[:10])
     del words  # Hint to reduce memory.
     

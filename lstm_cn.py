@@ -77,7 +77,7 @@ def build_dataset(words):
         data.append(index)
     count[0][1] = unk_count
     reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
-    return data, count, dictionary, reverse_dictionary, vocab_size
+    return data, count, dictionary, reverse_dictionary, vocab_size + 1
 
 
 start_time = time.time()
@@ -88,7 +88,33 @@ def elapsed(sec):
         return str(sec/60) + " min"
     else:
         return str(sec/(60*60)) + " hr"
+
+
+def load_embeddings():
+    import pandas as pd
+    df = pd.read_csv("final_embeddings.csv")
+    embeddings = df.as_matrix()[:,1:]
+    return embeddings
+
+def generate_batch():
+    global offset
+    end_offset = n_input + 1
+
+    batch = np.ndarray(shape=(batch_size), dtype=np.int32)
+    labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
     
+    # Generate a minibatch. Add some randomness on selection process.
+    if offset > (len(training_data)-end_offset):
+        offset = random.randint(0, n_input+1)
+    symbols_in_keys = [ [dictionary[ str(training_data[i])]] for i in range(offset, offset+n_input) ]
+    symbols_in_keys = np.reshape(np.array(symbols_in_keys), [-1, n_input, 1])
+    symbols_out_onehot = np.zeros([vocab_size], dtype=float)
+    symbols_out_onehot[dictionary[str(training_data[offset+n_input])]] = 1.0
+    symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
+    offset += (n_input+1)
+    
+    return batch, labels
+
     
 def tf_lstm():
 
@@ -96,7 +122,7 @@ def tf_lstm():
     learning_rate = 0.001
     training_iters = 50000
     display_step = 1000
-    n_input = 3
+    
     # number of units in RNN cell
     n_hidden = 512
 
@@ -155,25 +181,16 @@ def tf_lstm():
         session.run(init)
         print('Initialized')
         
-        step = 0
-        offset = random.randint(0,n_input+1)
-        end_offset = n_input + 1
+        step = 0        
         acc_total = 0
         loss_total = 0
         
         writer.add_graph(session.graph)
 
         while step < training_iters:
-            # Generate a minibatch. Add some randomness on selection process.
-            if offset > (len(training_data)-end_offset):
-                offset = random.randint(0, n_input+1)
-            symbols_in_keys = [ [dictionary[ str(training_data[i])]] for i in range(offset, offset+n_input) ]
-            symbols_in_keys = np.reshape(np.array(symbols_in_keys), [-1, n_input, 1])
-            symbols_out_onehot = np.zeros([vocab_size], dtype=float)
-            symbols_out_onehot[dictionary[str(training_data[offset+n_input])]] = 1.0
-            symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
+            batch_data, batch_labels = generate_batch()
             _, acc, loss, onehot_pred, summary = session.run([optimizer, accuracy, cost, pred, merged_summary_op], \
-                                                    feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
+                                                    feed_dict={x: batch_data, y: batch_labels})
             loss_total += loss
             acc_total += acc
             if (step+1) % display_step == 0:
@@ -189,7 +206,7 @@ def tf_lstm():
                 
                 writer.add_summary(summary, step)
             step += 1
-            offset += (n_input+1)
+            
         print("Optimization Finished!")
         print("Elapsed time: ", elapsed(time.time() - start_time))
         print("Run on command line.")
@@ -233,6 +250,8 @@ if __name__ == '__main__':
     print('Sample data', data[:10])
     #del words  # Hint to reduce memory.
 
+    embeddings = load_embeddings()
+
     # Target log path
     log_path = '/tmp/tensorflow/rnn_words'
     logdir = log_path
@@ -246,5 +265,11 @@ if __name__ == '__main__':
     rundir = 'run_%02d' % run_number
     logdir = os.path.join(logdir, rundir)
     writer = tf.summary.FileWriter(logdir)
+    
     training_data = words
+    n_input = 3
+    batch_size = 128
+    embedding_size = 128
+    offset = 0
+    
     tf_lstm()
