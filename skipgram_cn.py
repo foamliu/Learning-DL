@@ -176,7 +176,7 @@ def tf_crow():
       similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))
       
     #num_steps = 100001
-    num_steps = 5000001
+    num_steps = 500001
     
     with tf.Session(graph=graph) as session:
       tf.global_variables_initializer().run()

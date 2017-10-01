@@ -10,7 +10,6 @@ from __future__ import print_function
 import collections
 import numpy as np
 import random
-import collections
 import time
 import os
 from os import walk
@@ -90,31 +89,39 @@ def elapsed(sec):
         return str(sec/(60*60)) + " hr"
 
 
-def load_embeddings():
-    import pandas as pd
-    df = pd.read_csv("final_embeddings.csv")
-    embeddings = df.as_matrix()[:,1:]
-    return embeddings
-
-def generate_batch():
-    global offset
-    end_offset = n_input + 1
-
-    batch = np.ndarray(shape=(batch_size), dtype=np.int32)
-    labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
-    
-    # Generate a minibatch. Add some randomness on selection process.
-    if offset > (len(training_data)-end_offset):
-        offset = random.randint(0, n_input+1)
-    symbols_in_keys = [ [dictionary[ str(training_data[i])]] for i in range(offset, offset+n_input) ]
-    symbols_in_keys = np.reshape(np.array(symbols_in_keys), [-1, n_input, 1])
-    symbols_out_onehot = np.zeros([vocab_size], dtype=float)
-    symbols_out_onehot[dictionary[str(training_data[offset+n_input])]] = 1.0
-    symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
-    offset += (n_input+1)
-    
-    return batch, labels
-
+#def load_embeddings():
+#    import pandas as pd
+#    df = pd.read_csv("final_embeddings.csv")
+#    embeddings = df.as_matrix()[:,1:].astype(np.float32)
+#    print('embeddings.shape: ' + str(embeddings.shape))
+#    print('embeddings.dtype: ' + str(embeddings.dtype))
+#    return embeddings
+#
+#def generate_batch():
+#    global offset
+#    end_offset = n_input + 1
+#
+#    batch = np.zeros([batch_size, n_input, embedding_size])
+#    labels = np.zeros([batch_size, embedding_size])
+#    for batch_index in range(batch_size):
+#        # Generate a minibatch. Add some randomness on selection process.
+#        if offset > (len(data)-end_offset):
+#            offset = random.randint(0, n_input+1)
+#        for i in range(0, n_input):
+#            batch[batch_index, i] = embeddings[data[offset + i]]
+#        labels[batch_index] = embeddings[data[offset + n_input]]
+#
+#        offset += (n_input+1)
+#
+#    batch = batch.reshape((-1, n_input * embedding_size)).astype(np.float32)
+#    labels = labels.reshape((-1, embedding_size)).astype(np.float32)
+#    #print('batch.shape: ' + str(batch.shape)) -> (128, 384)
+#    return batch, labels
+#
+#
+#def nearest(embed):
+#    similarity = tf.matmul(embeddings, embed, transpose_b=True)
+#    return tf.argmax(similarity)
     
 def tf_lstm():
 
@@ -122,6 +129,7 @@ def tf_lstm():
     learning_rate = 0.001
     training_iters = 50000
     display_step = 1000
+    n_input = 3
     
     # number of units in RNN cell
     n_hidden = 512
@@ -147,18 +155,19 @@ def tf_lstm():
             # 2-layer LSTM, each layer has n_hidden units.
             # Average Accuracy= 95.20% at 50k iter
             
-            # rnn_cell = rnn.MultiRNNCell([rnn.BasicLSTMCell(n_hidden),rnn.BasicLSTMCell(n_hidden)])
+            rnn_cell = rnn.MultiRNNCell([rnn.BasicLSTMCell(n_hidden),rnn.BasicLSTMCell(n_hidden)])
             # 1-layer LSTM with n_hidden units but with lower accuracy.
             # Average Accuracy= 90.60% 50k iter
             # Uncomment line below to test but comment out the 2-layer rnn.MultiRNNCell above
-            rnn_cell = rnn.BasicLSTMCell(n_hidden)
+            # rnn_cell = rnn.BasicLSTMCell(n_hidden)
             # generate prediction
             outputs, states = rnn.static_rnn(rnn_cell, x, dtype=tf.float32)
             # there are n_input outputs but
             # we only want the last output
+            #print(outputs)
             return tf.matmul(outputs[-1], weights['out']) + biases['out']
         pred = RNN(x, weights, biases)
-        # Loss and optimizer
+        
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
         optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost)
         # Model evaluation
@@ -166,7 +175,7 @@ def tf_lstm():
         accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
         
         # Create a summary to monitor cost tensor
-        tf.summary.scalar("loss", cost)
+        tf.summary.scalar("cost", cost)
         # Create a summary to monitor accuracy tensor
         tf.summary.scalar("accuracy", accuracy)
 
@@ -177,20 +186,26 @@ def tf_lstm():
         init = tf.global_variables_initializer()
 
 
+    # Launch the graph
     with tf.Session(graph=graph) as session:
         session.run(init)
-        print('Initialized')
-        
-        step = 0        
+        step = 0
+        offset = random.randint(0,n_input+1)
+        end_offset = n_input + 1
         acc_total = 0
         loss_total = 0
-        
         writer.add_graph(session.graph)
-
         while step < training_iters:
-            batch_data, batch_labels = generate_batch()
+            # Generate a minibatch. Add some randomness on selection process.
+            if offset > (len(data)-end_offset):
+                offset = random.randint(0, n_input+1)
+            symbols_in_keys = [ [data[i]] for i in range(offset, offset+n_input) ]
+            symbols_in_keys = np.reshape(np.array(symbols_in_keys), [-1, n_input, 1])
+            symbols_out_onehot = np.zeros([vocab_size], dtype=float)
+            symbols_out_onehot[data[offset+n_input]] = 1.0
+            symbols_out_onehot = np.reshape(symbols_out_onehot,[1,-1])
             _, acc, loss, onehot_pred, summary = session.run([optimizer, accuracy, cost, pred, merged_summary_op], \
-                                                    feed_dict={x: batch_data, y: batch_labels})
+                                                    feed_dict={x: symbols_in_keys, y: symbols_out_onehot})
             loss_total += loss
             acc_total += acc
             if (step+1) % display_step == 0:
@@ -199,20 +214,18 @@ def tf_lstm():
                       "{:.2f}%".format(100*acc_total/display_step))
                 acc_total = 0
                 loss_total = 0
-                symbols_in = [training_data[i] for i in range(offset, offset + n_input)]
-                symbols_out = training_data[offset + n_input]
+                symbols_in = [reverse_dictionary[data[i]] for i in range(offset, offset + n_input)]
+                symbols_out = reverse_dictionary[data[offset + n_input]]
                 symbols_out_pred = reverse_dictionary[int(tf.argmax(onehot_pred, 1).eval())]
                 print("%s - [%s] vs [%s]" % (symbols_in,symbols_out,symbols_out_pred))
-                
                 writer.add_summary(summary, step)
             step += 1
-            
+            offset += (n_input+1)
         print("Optimization Finished!")
         print("Elapsed time: ", elapsed(time.time() - start_time))
         print("Run on command line.")
-        print("\ttensorboard --logdir=%s" % (log_path))
+        print("\ttensorboard --logdir=%s" % (logdir))
         print("Point your web browser to: http://localhost:6006/")
-    
         while True:
             prompt = "%s words: " % n_input
             sentence = input(prompt)
@@ -236,9 +249,12 @@ def tf_lstm():
 
 
 
+
 if __name__ == '__main__':
     folder = '《刘慈欣作品全集》(v1.0)'
-    concat = load_file(folder)
+    #concat = load_file(folder)
+    with open('short.txt', 'r', encoding='utf-8') as myfile:
+        concat = myfile.read()
     #print(concat[20000:20000+100])
     print("Full text length %d" %len(concat))
 
@@ -248,9 +264,10 @@ if __name__ == '__main__':
     data, count, dictionary, reverse_dictionary, vocab_size = build_dataset(words)
     print('Most common words ', count[:10])
     print('Sample data', data[:10])
-    #del words  # Hint to reduce memory.
+    del words  # Hint to reduce memory.
+    #data = data[200000:210000]
 
-    embeddings = load_embeddings()
+    #embeddings = load_embeddings()
 
     # Target log path
     log_path = '/tmp/tensorflow/rnn_words'
@@ -266,9 +283,9 @@ if __name__ == '__main__':
     logdir = os.path.join(logdir, rundir)
     writer = tf.summary.FileWriter(logdir)
     
-    training_data = words
     n_input = 3
-    batch_size = 128
+    #batch_size = 128
+    batch_size = 16
     embedding_size = 128
     offset = 0
     
