@@ -23,7 +23,7 @@ from sklearn.manifold import TSNE
 #sys.setdefaultencoding('utf-8')
 import jieba
 import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif']=['Arial Unicode MS']
+plt.rcParams['font.sans-serif']=['SimHei']
 
 
 def cleanse(content):
@@ -124,9 +124,20 @@ def plot3d(embeddings, labels):
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     assert embeddings.shape[0] >= len(labels), 'More labels than embeddings'
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
     for i, label in enumerate(labels):
         x, y, z = embeddings[i,:]
-
+        #print(x,y,z)
+        #print(label)
+        ax.text(x, y, z, label, color='blue')
+    ax.set_xlim(-1000, 1000)
+    ax.set_ylim(-1000, 1000)
+    ax.set_zlim(-1000, 1000)
+    ax.set_xlabel('X axis')
+    ax.set_ylabel('Y axis')
+    ax.set_zlabel('Z axis')        
+    plt.show()
 
 def tf_skipgram():   
     batch_size = 128
@@ -219,38 +230,51 @@ def tf_skipgram():
       df = pd.DataFrame(final_embeddings)
       df.to_csv("final_embeddings.csv")
       
-      num_points = 400
-
-      tsne = TSNE(perplexity=30, n_components=3, init='pca', n_iter=5000)
-      three_d_embeddings = tsne.fit_transform(final_embeddings[1:num_points+1, :])
-
-      words = [reverse_dictionary[i] for i in range(1, num_points+1)]
-      plot3d(three_d_embeddings, words)
       
       
-if __name__ == '__main__':  
+if __name__ == '__main__':
+    
     folder = '《刘慈欣作品全集》(v1.0)'
     concat = load_file(folder)
-    #print(concat[20000:20000+100])
     print("Full text length %d" %len(concat))
     
     words = read_data(concat)
     print('Data size %d' % len(words))
     
-    data, count, dictionary, reverse_dictionary, vocab_size = build_dataset(words)
+    data, count, dictionary, reverse_dictionary, vocab_size = build_dataset(words)    
     print('Most common words ', count[:10])
     print('Sample data', data[:10])
     del words  # Hint to reduce memory.
     
-    data_index = 0
+        
+    embeddings_path = "final_embeddings.csv"
+    import os
+    import pandas as pd 
     
-    print('data:', [reverse_dictionary[di] for di in data[:8]])
-    
-    for num_skips, skip_window in [(2, 1), (4, 2)]:
-        data_index = 0
-        batch, labels = generate_batch(batch_size=8, num_skips=num_skips, skip_window=skip_window)
-        print('\nwith num_skips = %d and skip_window = %d:' % (num_skips, skip_window))
-        print('    batch:', [reverse_dictionary[bi] for bi in batch])
-        print('    labels:', [reverse_dictionary[li] for li in labels.reshape(8)])
+    if (os.path.isfile(embeddings_path)):
+        embeddings = pd.read_csv(embeddings_path).values
+        
+        num_points = 400
 
-    tf_skipgram()
+        tsne = TSNE(perplexity=30, n_components=3, init='pca', n_iter=5000)
+        three_d_embeddings = tsne.fit_transform(embeddings[1:num_points+1, :])
+
+        words = [reverse_dictionary[i] for i in range(1, num_points+1)]
+        plot3d(three_d_embeddings, words)
+        
+    else:
+        
+        data_index = 0
+        
+        print('data:', [reverse_dictionary[di] for di in data[:8]])
+        
+        for num_skips, skip_window in [(2, 1), (4, 2)]:
+            data_index = 0
+            batch, labels = generate_batch(batch_size=8, num_skips=num_skips, skip_window=skip_window)
+            print('\nwith num_skips = %d and skip_window = %d:' % (num_skips, skip_window))
+            print('    batch:', [reverse_dictionary[bi] for bi in batch])
+            print('    labels:', [reverse_dictionary[li] for li in labels.reshape(8)])
+    
+        tf_skipgram()
+    
+    
