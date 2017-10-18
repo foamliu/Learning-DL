@@ -137,8 +137,7 @@ def elapsed(sec):
 #    similarity = tf.matmul(embeddings, embed, transpose_b=True)
 #    return tf.argmax(similarity)
     
-def generate_batch():
-    global offset
+def generate_batch(offset):
     end_offset = n_input + 1
     
     batch = np.zeros([batch_size, n_input, 1])
@@ -157,7 +156,7 @@ def generate_batch():
     
     batch = batch.reshape((-1, n_input, 1)).astype(np.float32)
     labels = labels.reshape((-1, vocab_size)).astype(np.float32)
-    return batch, labels
+    return batch, labels, offset
 
 
 def tf_lstm():
@@ -234,8 +233,8 @@ def tf_lstm():
         offset = random.randint(0,n_input+1)
 
         writer.add_graph(session.graph)
-        while step < training_iters:            
-            batch_x, batch_y = generate_batch()
+        while step < training_iters:
+            batch_x, batch_y, offset = generate_batch(offset)
             _, acc, loss, onehot_pred, summary = session.run([optimizer, accuracy, cost, pred, merged_summary_op], \
                                                     feed_dict={x: batch_x, y: batch_y})
             if (step+1) % display_step == 0:
@@ -243,8 +242,8 @@ def tf_lstm():
                       "{:.6f}".format(loss) + ", Training Accuracy= " + \
                       "{:.2f}%".format(100*acc))
 
-                symbols_in = [reverse_dictionary[data[i]] for i in range(offset, offset + n_input)]
-                symbols_out = reverse_dictionary[data[offset + n_input]]
+                symbols_in = [reverse_dictionary[data[i]] for i in range(offset - (n_input + 1), offset - 1)]
+                symbols_out = reverse_dictionary[data[offset - 1]]
                 #print('onehot_pred.shape： ' + str(onehot_pred.shape))
                 #print('onehot_pred[-1,:].shape: ' + str(onehot_pred[-1,:].shape))
                 argmax = tf.argmax(onehot_pred[-1,:]).eval()
