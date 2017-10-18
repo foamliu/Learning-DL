@@ -36,6 +36,8 @@ def cleanse(content):
     content = content.replace('）','')
     content = content.replace('【','')
     content = content.replace('】','')
+    content = content.replace('…','')
+    content = content.replace('：','')
     content = content.replace('的','')
     content = content.replace('了','')
     
@@ -312,7 +314,7 @@ if __name__ == '__main__':
     writer = tf.summary.FileWriter(logdir)
     
     n_input = 3
-    batch_size = 128
+    batch_size = 256
     #batch_size = 16
     embedding_size = 128
     offset = 0
