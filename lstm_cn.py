@@ -38,7 +38,8 @@ def cleanse(content):
     content = content.replace('】','')
     content = content.replace('…','')
     content = content.replace('：','')
-   
+    content = content.replace('’','')
+    content = content.replace('；','')
     return content
 
 
@@ -102,42 +103,8 @@ def elapsed(sec):
     else:
         return str(sec/(60*60)) + " hr"
 
-
-#def load_embeddings():
-#    import pandas as pd
-#    df = pd.read_csv("final_embeddings.csv")
-#    embeddings = df.as_matrix()[:,1:].astype(np.float32)
-#    print('embeddings.shape: ' + str(embeddings.shape))
-#    print('embeddings.dtype: ' + str(embeddings.dtype))
-#    return embeddings
-#
-#def generate_batch():
-#    global offset
-#    end_offset = n_input + 1
-#
-#    batch = np.zeros([batch_size, n_input, embedding_size])
-#    labels = np.zeros([batch_size, embedding_size])
-#    for batch_index in range(batch_size):
-#        # Generate a minibatch. Add some randomness on selection process.
-#        if offset > (len(data)-end_offset):
-#            offset = random.randint(0, n_input+1)
-#        for i in range(0, n_input):
-#            batch[batch_index, i] = embeddings[data[offset + i]]
-#        labels[batch_index] = embeddings[data[offset + n_input]]
-#
-#        offset += (n_input+1)
-#
-#    batch = batch.reshape((-1, n_input * embedding_size)).astype(np.float32)
-#    labels = labels.reshape((-1, embedding_size)).astype(np.float32)
-#    #print('batch.shape: ' + str(batch.shape)) -> (128, 384)
-#    return batch, labels
-#
-#
-#def nearest(embed):
-#    similarity = tf.matmul(embeddings, embed, transpose_b=True)
-#    return tf.argmax(similarity)
     
-def generate_batch(offset):
+def generate_batch(offset, batch_size, n_input):
     end_offset = n_input + 1
     
     batch = np.zeros([batch_size, n_input, 1])
@@ -163,19 +130,22 @@ def tf_lstm():
 
     # Parameters
     learning_rate = 0.0001
-    training_iters = 500000
+    training_iters = 250000
     display_step = 1000
+    save_step = 5000
     n_input = 3
+    batch_size = 256
     
     # number of units in RNN cell
     n_hidden = 1024
     num_classes = vocab_size
+    words_to_gen = 512
 
     graph = tf.Graph()
     with graph.as_default():
         # tf Graph input
-        x = tf.placeholder("float", [None, n_input, 1])
-        y = tf.placeholder("float", [None, num_classes])
+        x = tf.placeholder("float", [None, n_input, 1], name='x')
+        y = tf.placeholder("float", [None, num_classes], name='y')
         # RNN output node weights and biases
         weights = {
             'out': tf.Variable(tf.random_normal([n_hidden, num_classes]))
@@ -190,11 +160,11 @@ def tf_lstm():
             # (eg. [had] [a] [general] -> [20] [6] [33])
             x = tf.split(x,n_input,1)
             # 2-layer LSTM, each layer has n_hidden units.
-            # Average Accuracy= 95.20% at 50k iter
+            # Average Accuracy= 95.20% at 250k iter
             
             rnn_cell = rnn.MultiRNNCell([rnn.BasicLSTMCell(n_hidden),rnn.BasicLSTMCell(n_hidden)])
             # 1-layer LSTM with n_hidden units but with lower accuracy.
-            # Average Accuracy= 90.60% 50k iter
+            # Average Accuracy= 90.60% 250k iter
             # Uncomment line below to test but comment out the 2-layer rnn.MultiRNNCell above
             # rnn_cell = rnn.BasicLSTMCell(n_hidden)
             # generate prediction
@@ -206,38 +176,45 @@ def tf_lstm():
         
         pred = RNN(x, weights, biases)
         
-        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-        optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost)
-        # Model evaluation
-        correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
-        accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+        with tf.name_scope('cost'):
+            cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+            tf.summary.scalar("cost", cost)
         
-        # Create a summary to monitor cost tensor
-        tf.summary.scalar("cost", cost)
-        # Create a summary to monitor accuracy tensor
-        tf.summary.scalar("accuracy", accuracy)
-
-        # Merge all summaries into a single op
-        merged_summary_op = tf.summary.merge_all()
+        with tf.name_scope('optimizer'):
+            optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost)
         
-        # Initializing the variables
-        init = tf.global_variables_initializer()
+        with tf.name_scope("accuracy"):
+            # Model evaluation
+            correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
+            accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))       
+            tf.summary.scalar("accuracy", accuracy)
+       
+
+        summary_op = tf.summary.merge_all()
+        saver = tf.train.Saver()
 
 
-    # config = tf.ConfigProto(device_count = {'GPU': 0})
-    # Launch the graph
+    #config = tf.ConfigProto(device_count = {'GPU': 0})    
     #with tf.Session(graph=graph, config=config) as session:
+    # Launch the graph
     with tf.Session(graph=graph) as session:
-        session.run(init)
+        session.run(tf.global_variables_initializer())
         step = 0
         offset = random.randint(0,n_input+1)
-
         writer.add_graph(session.graph)
+        
+        print("Run on command line.")
+        print("\ttensorboard --logdir=%s" % (logdir))
+        print("Point your web browser to: http://localhost:6006/")
+        
         while step < training_iters:
-            batch_x, batch_y, offset = generate_batch(offset)
-            _, acc, loss, onehot_pred, summary = session.run([optimizer, accuracy, cost, pred, merged_summary_op], \
-                                                    feed_dict={x: batch_x, y: batch_y})
+            batch_x, batch_y, offset = generate_batch(offset, batch_size, n_input)
+            session.run(optimizer, feed_dict={x: batch_x, y: batch_y})
+            
             if (step+1) % display_step == 0:
+                # Calculate batch accuracy
+                acc, loss, onehot_pred, summary = session.run([accuracy, cost, pred, summary_op], feed_dict={x: batch_x, y: batch_y})
+                writer.add_summary(summary, step)
                 print("Iter= " + str(step+1) + ", Minibatch Loss= " + \
                       "{:.6f}".format(loss) + ", Training Accuracy= " + \
                       "{:.2f}%".format(100*acc))
@@ -250,13 +227,18 @@ def tf_lstm():
                 print('tf.argmax(onehot_pred[-1,:]).eval(): ' + str(argmax))
                 symbols_out_pred = reverse_dictionary[argmax]
                 print("%s - [%s] vs [%s]" % (symbols_in,symbols_out,symbols_out_pred))
-                writer.add_summary(summary, step)
-            step += 1
+            
+            if (step+1) % save_step == 0:
+                print("Saving model checkpoint after {} steps.".format(step))
+                saver.save(session, "model.ckpt", step)
+                
+            step += 1           
+            
+            
         print("Optimization Finished!")
         print("Elapsed time: ", elapsed(time.time() - start_time))
-        print("Run on command line.")
-        print("\ttensorboard --logdir=%s" % (logdir))
-        print("Point your web browser to: http://localhost:6006/")
+
+        
         while True:
             prompt = "%s words: " % n_input
             sentence = input(prompt)
@@ -266,7 +248,7 @@ def tf_lstm():
                 continue
             try:
                 symbols_in_keys = [dictionary[str(words[i])] for i in range(len(words))]
-                for i in range(32):
+                for i in range(words_to_gen):
                     keys = np.reshape(np.array(symbols_in_keys), [-1, n_input, 1])
                     onehot_pred = session.run(pred, feed_dict={x: keys})
                     onehot_pred_index = int(tf.argmax(onehot_pred, 1).eval())
@@ -276,8 +258,6 @@ def tf_lstm():
                 print(sentence)
             except:
                 print("Word not in dictionary")
-
-
 
 
 
@@ -295,8 +275,6 @@ if __name__ == '__main__':
     print('Sample data', data[:10])
     del words  # Hint to reduce memory.
 
-    #embeddings = load_embeddings()
-
     # Target log path
     log_path = '/tmp/tensorflow/rnn_words'
     logdir = log_path
@@ -311,10 +289,5 @@ if __name__ == '__main__':
     logdir = os.path.join(logdir, rundir)
     writer = tf.summary.FileWriter(logdir)
     
-    n_input = 3
-    batch_size = 256
-    #batch_size = 16
-    embedding_size = 128
-    offset = 0
-    
+
     tf_lstm()
