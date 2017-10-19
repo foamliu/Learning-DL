@@ -176,7 +176,7 @@ def tf_crow():
       similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))
       
     #num_steps = 100001
-    num_steps = 500001
+    num_steps = 5000001
     
     with tf.Session(graph=graph) as session:
       tf.global_variables_initializer().run()
@@ -206,10 +206,11 @@ def tf_crow():
               close_word = reverse_dictionary[nearest[k]]
               log = '%s %s,' % (log, close_word)
             print(log)
+            
       final_embeddings = normalized_embeddings.eval()
       #print(final_embeddings)
       import pandas as pd 
-      df = pd.DataFrame(final_embeddings)
+      df = pd.DataFrame(final_embeddings, index = dictionary.keys())
       df.to_csv("final_embeddings.csv")
       
       num_points = 400
