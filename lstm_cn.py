@@ -38,9 +38,7 @@ def cleanse(content):
     content = content.replace('】','')
     content = content.replace('…','')
     content = content.replace('：','')
-    content = content.replace('的','')
-    content = content.replace('了','')
-    
+   
     return content
 
 
@@ -165,7 +163,7 @@ def tf_lstm():
 
     # Parameters
     learning_rate = 0.0001
-    training_iters = 50000
+    training_iters = 500000
     display_step = 1000
     n_input = 3
     
@@ -291,7 +289,7 @@ if __name__ == '__main__':
     words = read_data(concat)
     print('Data size %d' % len(words))
 
-    vocab_size = 5000
+    vocab_size = 10000
     data, count, dictionary, reverse_dictionary = build_dataset(words)
     print('Most common words ', count[:10])
     print('Sample data', data[:10])
