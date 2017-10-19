@@ -132,7 +132,7 @@ def tf_lstm():
     learning_rate = 0.0001
     training_iters = 250000
     display_step = 1000
-    save_step = 5000
+    save_step = 50000
     n_input = 3
     batch_size = 256
     
@@ -227,7 +227,7 @@ def tf_lstm():
             
             if (step+1) % save_step == 0:
                 print("Saving model checkpoint after {} steps.".format(step))
-                saver.save(session, os.path.join(MODELDIR, "model.ckpt"), step)
+                saver.save(session, os.path.join(MODELDIR, "model.ckpt"), (step+1))
                 
             step += 1           
             
