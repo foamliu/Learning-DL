@@ -147,12 +147,9 @@ def tf_lstm():
         x = tf.placeholder("float", [None, n_input, 1], name='x')
         y = tf.placeholder("float", [None, num_classes], name='y')
         # RNN output node weights and biases
-        weights = {
-            'out': tf.Variable(tf.random_normal([n_hidden, num_classes]))
-        }
-        biases = {
-            'out': tf.Variable(tf.random_normal([num_classes]))
-        }
+        weights = tf.Variable(tf.random_normal([n_hidden, num_classes]), name='weights')
+        biases = tf.Variable(tf.random_normal([num_classes]), name='biases')
+
         def RNN(x, weights, biases):
             # reshape to [1, n_input]
             x = tf.reshape(x, [-1, n_input])
@@ -172,13 +169,13 @@ def tf_lstm():
             # there are n_input outputs but
             # we only want the last output
             #print(outputs)
-            return tf.matmul(outputs[-1], weights['out']) + biases['out']
+            return tf.matmul(outputs[-1], weights) + biases
         
         pred = RNN(x, weights, biases)
         
         with tf.name_scope('cost'):
             cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-            tf.summary.scalar("cost", cost)
+            tf.summary.scalar(name='cost', tensor=cost)
         
         with tf.name_scope('optimizer'):
             optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost)
@@ -187,7 +184,7 @@ def tf_lstm():
             # Model evaluation
             correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
             accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))       
-            tf.summary.scalar("accuracy", accuracy)
+            tf.summary.scalar(name='accuracy', tensor=accuracy)
        
 
         summary_op = tf.summary.merge_all()
@@ -204,7 +201,7 @@ def tf_lstm():
         writer.add_graph(session.graph)
         
         print("Run on command line.")
-        print("\ttensorboard --logdir=%s" % (logdir))
+        print("\ttensorboard --logdir=%s" % (LOGDIR))
         print("Point your web browser to: http://localhost:6006/")
         
         while step < training_iters:
@@ -230,7 +227,7 @@ def tf_lstm():
             
             if (step+1) % save_step == 0:
                 print("Saving model checkpoint after {} steps.".format(step))
-                saver.save(session, "model.ckpt", step)
+                saver.save(session, os.path.join(MODELDIR, "model.ckpt"), step)
                 
             step += 1           
             
@@ -262,8 +259,17 @@ def tf_lstm():
 
 
 if __name__ == '__main__':
-    folder = '《刘慈欣作品全集》(v1.0)'
-    concat = load_file(folder)
+    MAINDIR = os.path.dirname(os.path.realpath(__file__))
+    MODELDIR = MAINDIR + "/models"
+    DATADIR = MAINDIR + "/《刘慈欣作品全集》(v1.0)"
+    LOGDIR = MAINDIR + "/logs"
+    
+    if not os.path.exists(MODELDIR):
+        os.makedirs(MODELDIR)
+    if not os.path.exists(LOGDIR):
+        os.makedirs(LOGDIR)
+
+    concat = load_file(DATADIR)
     print("Full text length %d" %len(concat))
 
     words = read_data(concat)
@@ -276,18 +282,15 @@ if __name__ == '__main__':
     del words  # Hint to reduce memory.
 
     # Target log path
-    log_path = '/tmp/tensorflow/rnn_words'
-    logdir = log_path
-    
-    previous_runs = os.listdir(logdir)
+    previous_runs = os.listdir(LOGDIR)
     if len(previous_runs) == 0:
         run_number = 1
     else:
         run_number = max([int(s.split('run_')[1]) for s in previous_runs]) + 1
     
     rundir = 'run_%02d' % run_number
-    logdir = os.path.join(logdir, rundir)
-    writer = tf.summary.FileWriter(logdir)
+    logpath = os.path.join(LOGDIR, rundir)
+    writer = tf.summary.FileWriter(logpath)
     
 
     tf_lstm()
