@@ -84,11 +84,11 @@ def build_dataset(words):
     for word in words:
         if word in dictionary:
             index = dictionary[word]
-            data.append(index)
+            #data.append(index)
         else:
             index = 0  # dictionary['UNK']
             unk_count = unk_count + 1
-        #data.append(index)
+        data.append(index)
     count[0][1] = unk_count
     reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
     return data, count, dictionary, reverse_dictionary
@@ -132,9 +132,9 @@ def tf_lstm():
     learning_rate = 0.0001
     training_iters = 250000
     display_step = 1000
-    save_step = 50000
+    #save_step = 50000
     n_input = 3
-    batch_size = 256
+    batch_size = 64
     
     # number of units in RNN cell
     n_hidden = 1024
@@ -188,7 +188,7 @@ def tf_lstm():
        
 
         summary_op = tf.summary.merge_all()
-        saver = tf.train.Saver()
+        #saver = tf.train.Saver()
 
 
     #config = tf.ConfigProto(device_count = {'GPU': 0})    
@@ -204,7 +204,8 @@ def tf_lstm():
         print("\ttensorboard --logdir=%s" % (LOGDIR))
         print("Point your web browser to: http://localhost:6006/")
         
-        while step < training_iters:
+        iter_start = time.time()
+        while step < training_iters:            
             batch_x, batch_y, offset = generate_batch(offset, batch_size, n_input)
             session.run(optimizer, feed_dict={x: batch_x, y: batch_y})
             
@@ -214,8 +215,10 @@ def tf_lstm():
                 writer.add_summary(summary, step)
                 print("Iter= " + str(step+1) + ", Minibatch Loss= " + \
                       "{:.6f}".format(loss) + ", Training Accuracy= " + \
-                      "{:.2f}%".format(100*acc))
+                      "{:.2f}%".format(100*acc) + ", Iter time= " + \
+                      elapsed(time.time() - iter_start))
 
+                iter_start = time.time()
                 symbols_in = [reverse_dictionary[data[i]] for i in range(offset - (n_input + 1), offset - 1)]
                 symbols_out = reverse_dictionary[data[offset - 1]]
                 #print('onehot_pred.shape： ' + str(onehot_pred.shape))
@@ -225,9 +228,9 @@ def tf_lstm():
                 symbols_out_pred = reverse_dictionary[argmax]
                 print("%s - [%s] vs [%s]" % (symbols_in,symbols_out,symbols_out_pred))
             
-            if (step+1) % save_step == 0:
-                print("Saving model checkpoint after {} steps.".format(step))
-                saver.save(session, os.path.join(MODELDIR, "model.ckpt"), (step+1))
+            #if (step+1) % save_step == 0:
+                #print("Saving model checkpoint after {} steps.".format(step+1))
+                #saver.save(session, os.path.join(MODELDIR, "model.ckpt"), (step+1))
                 
             step += 1           
             
@@ -275,7 +278,7 @@ if __name__ == '__main__':
     words = read_data(concat)
     print('Data size %d' % len(words))
 
-    vocab_size = 10000
+    vocab_size = 25000
     data, count, dictionary, reverse_dictionary = build_dataset(words)
     print('Most common words ', count[:10])
     print('Sample data', data[:10])
