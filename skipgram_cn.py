@@ -30,23 +30,6 @@ def cleanse(content):
     content = content.replace('\n','')
     content = content.replace('\r','')
     content = content.replace('\u3000','')
-    content = content.replace(' ','')
-    content = content.replace('\t','')
-    content = content.replace('，','')
-    content = content.replace('。','')
-    content = content.replace('”','')
-    content = content.replace('“','')
-    content = content.replace('？','')
-    content = content.replace('\'','')
-    content = content.replace('（','')
-    content = content.replace('）','')
-    content = content.replace('【','')
-    content = content.replace('】','')
-    content = content.replace('…','')
-    content = content.replace('：','')
-    content = content.replace('’','')
-    content = content.replace('；','')
-    content = content.replace('、','')
     return content
 
 def load_file(folder):
@@ -190,7 +173,7 @@ def tf_skipgram():
         normalized_embeddings, valid_dataset)
       similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))
       
-    num_steps = 100001
+    num_steps = 1000001
     
     with tf.Session(graph=graph) as session:
       tf.global_variables_initializer().run()
