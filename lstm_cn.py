@@ -40,6 +40,7 @@ def cleanse(content):
     content = content.replace('：','')
     content = content.replace('’','')
     content = content.replace('；','')
+    content = content.replace('、','')
     return content
 
 

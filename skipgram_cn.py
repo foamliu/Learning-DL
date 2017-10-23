@@ -23,8 +23,8 @@ from sklearn.manifold import TSNE
 #sys.setdefaultencoding('utf-8')
 import jieba
 import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif']=['Arial Unicode MS']
-
+#plt.rcParams['font.sans-serif']=['Arial Unicode MS'] # for Mac
+plt.rcParams['font.sans-serif']=['SimHei'] # for Windows
 
 def cleanse(content):
     content = content.replace('\n','')
@@ -32,6 +32,21 @@ def cleanse(content):
     content = content.replace('\u3000','')
     content = content.replace(' ','')
     content = content.replace('\t','')
+    content = content.replace('，','')
+    content = content.replace('。','')
+    content = content.replace('”','')
+    content = content.replace('“','')
+    content = content.replace('？','')
+    content = content.replace('\'','')
+    content = content.replace('（','')
+    content = content.replace('）','')
+    content = content.replace('【','')
+    content = content.replace('】','')
+    content = content.replace('…','')
+    content = content.replace('：','')
+    content = content.replace('’','')
+    content = content.replace('；','')
+    content = content.replace('、','')
     return content
 
 def load_file(folder):
@@ -121,7 +136,7 @@ def plot(embeddings, labels):
     pylab.savefig('embeddings.png')
 
 
-def tf_crow():   
+def tf_skipgram():   
     batch_size = 128
     embedding_size = 128 # Dimension of the embedding vector.
     skip_window = 1 # How many words to consider left and right.
@@ -136,7 +151,7 @@ def tf_crow():
     
     graph = tf.Graph()
     
-    with graph.as_default(), tf.device('/cpu:0'):
+    with graph.as_default():
     
       # Input data.
       train_dataset = tf.placeholder(tf.int32, shape=[batch_size])
@@ -175,8 +190,7 @@ def tf_crow():
         normalized_embeddings, valid_dataset)
       similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))
       
-    #num_steps = 100001
-    num_steps = 5000001
+    num_steps = 100001
     
     with tf.Session(graph=graph) as session:
       tf.global_variables_initializer().run()
@@ -211,7 +225,7 @@ def tf_crow():
       #print(final_embeddings)
       import pandas as pd 
       df = pd.DataFrame(final_embeddings, index = dictionary.keys())
-      df.to_csv("final_embeddings.csv")
+      df.to_csv("final_embeddings.csv", encoding='utf-8')
       
       num_points = 400
 
@@ -247,4 +261,4 @@ if __name__ == '__main__':
         print('    batch:', [reverse_dictionary[bi] for bi in batch])
         print('    labels:', [reverse_dictionary[li] for li in labels.reshape(8)])
 
-    tf_crow()
+    tf_skipgram()
