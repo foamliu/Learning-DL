@@ -176,7 +176,7 @@ def tf_lstm():
     words_to_gen = 128
 
     graph = tf.Graph()
-    with graph.as_default():#, tf.device('cpu:0'):
+    with graph.as_default(), tf.device('cpu:0'):
         # tf Graph input
         x = tf.placeholder(tf.int32, [None, n_input], name='x')
         y = tf.placeholder(tf.int32, [None, 1], name='y')
@@ -199,7 +199,9 @@ def tf_lstm():
             # Uncomment line below to test but comment out the 2-layer rnn.MultiRNNCell above
             # rnn_cell = rnn.BasicLSTMCell(n_hidden)
             # generate prediction
-            outputs, states = rnn.static_rnn(rnn_cell, tf.nn.embedding_lookup(params=embeddings, ids=x), dtype=tf.float32)
+            embedding = tf.nn.embedding_lookup(params=embeddings, ids=x).eval()
+            print('embedding: ' + str(embedding))
+            outputs, states = rnn.static_rnn(rnn_cell, embedding, dtype=tf.float32)
             # there are n_input outputs but
             # we only want the last output
             #print(outputs)
@@ -228,7 +230,7 @@ def tf_lstm():
     #config = tf.ConfigProto(device_count = {'GPU': 0})    
     #with tf.Session(graph=graph, config=config) as session:
     # Launch the graph
-    with tf.Session(graph=graph) as session:
+    with tf.Session(graph=graph).as_default() as session:
         session.run(tf.global_variables_initializer())
         step = 0
         offset = random.randint(0,n_input+1)

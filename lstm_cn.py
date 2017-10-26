@@ -109,33 +109,31 @@ def generate_batch(offset, batch_size, n_input):
     end_offset = n_input + 1
     
     batch = np.zeros([batch_size, n_input, 1])
-    labels = np.zeros([batch_size, vocab_size])
+    labels = np.zeros([batch_size])
     for batch_index in range(batch_size):
         # Generate a minibatch. Add some randomness on selection process.
         if offset > (len(data)-end_offset):
             offset = random.randint(0, n_input+1)
         for i in range(0, n_input):
             batch[batch_index, i] = data[offset + i]
-        #labels[batch_index] = data[offset + n_input]
-        labels[batch_index] = np.zeros([vocab_size], dtype=float)
-        labels[batch_index][data[offset+n_input]] = 1.0
+        labels[batch_index] = data[offset+n_input]
         
         offset += (n_input+1)
     
     batch = batch.reshape((-1, n_input, 1)).astype(np.float32)
-    labels = labels.reshape((-1, vocab_size)).astype(np.float32)
+    labels = labels.reshape((-1)).astype(np.int64)
     return batch, labels, offset
 
 
 def tf_lstm():
 
     # Parameters
-    learning_rate = 0.0001
-    training_iters = 250000
+    learning_rate = 1e-4
+    training_iters = 500000
     display_step = 1000
     #save_step = 50000
     n_input = 3
-    batch_size = 64
+    batch_size = 256
     
     # number of units in RNN cell
     n_hidden = 1024
@@ -145,8 +143,8 @@ def tf_lstm():
     graph = tf.Graph()
     with graph.as_default():
         # tf Graph input
-        x = tf.placeholder("float", [None, n_input, 1], name='x')
-        y = tf.placeholder("float", [None, num_classes], name='y')
+        x = tf.placeholder(tf.float32, [None, n_input, 1], name='x')
+        y = tf.placeholder(tf.int64, [None], name='y')
         # RNN output node weights and biases
         weights = tf.Variable(tf.random_normal([n_hidden, num_classes]), name='weights')
         biases = tf.Variable(tf.random_normal([num_classes]), name='biases')
@@ -175,7 +173,7 @@ def tf_lstm():
         pred = RNN(x, weights, biases)
         
         with tf.name_scope('cost'):
-            cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+            cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=pred, labels=y))
             tf.summary.scalar(name='cost', tensor=cost)
         
         with tf.name_scope('optimizer'):
@@ -183,7 +181,7 @@ def tf_lstm():
         
         with tf.name_scope("accuracy"):
             # Model evaluation
-            correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
+            correct_pred = tf.equal(tf.argmax(pred,1), y)
             accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))       
             tf.summary.scalar(name='accuracy', tensor=accuracy)
        
@@ -295,6 +293,5 @@ if __name__ == '__main__':
     rundir = 'run_%02d' % run_number
     logpath = os.path.join(LOGDIR, rundir)
     writer = tf.summary.FileWriter(logpath)
-    
-
+        
     tf_lstm()
