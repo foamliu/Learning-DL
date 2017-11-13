@@ -29,7 +29,22 @@ def dense_to_one_hot(labels_dense, num_classes):
     labels_one_hot.flat[index_offset + labels_dense.ravel()] = 1
     return labels_one_hot
 
-    
+def data_augmentation(old_images, old_labels):
+    new_images = []
+    new_labels = []
+    for i in range(len(old_images)):
+        new_images.append(old_images[i])
+        img = old_images[i]
+        img = np.reshape(img, (48,48))
+        img = np.flip(img, axis=1)
+        img = np.reshape(img, 48*48)
+        new_images.append(img)
+        new_labels.append(old_labels[i])
+        new_labels.append(old_labels[i])
+    new_images = np.reshape(new_images, (-1, 48*48))
+    new_labels = np.reshape(new_labels, (-1, 7))
+    return new_images, new_labels
+
 def read_data(file):
     data = pd.read_csv(file)
     print(data.shape)
@@ -72,8 +87,9 @@ def read_data(file):
     validation_images = images[:VALIDATION_SIZE]
     validation_labels = labels[:VALIDATION_SIZE]
     
-    train_images = images[VALIDATION_SIZE:]
-    train_labels = labels[VALIDATION_SIZE:]    
+    #train_images = images[VALIDATION_SIZE:]
+    #train_labels = labels[VALIDATION_SIZE:]
+    train_images, train_labels = data_augmentation(images[VALIDATION_SIZE:], labels[VALIDATION_SIZE:])
     print ('The number of final training data: %d'%(len(train_images)))
     
     return data, train_images, train_labels, validation_images, validation_labels, each_pixel_mean, each_pixel_std
@@ -229,7 +245,7 @@ def graph():
     
 def train():    
     # set to 3000 iterations 
-    TRAINING_ITERATIONS = 3000
+    TRAINING_ITERATIONS = 5000
         
     DROPOUT = 0.5
     
