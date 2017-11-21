@@ -1,58 +1,91 @@
 import pandas as pd
+import numpy as np
+import time
 from textblob.classifiers import NaiveBayesClassifier
-from textblob.classifiers import MaxEntClassifier
-from textblob.classifiers import NLTKClassifier
 from textblob.classifiers import DecisionTreeClassifier
 import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+stopset = set(stopwords.words('english'))
+ignoreDT = True
 
 def remove_prefix(theList, prefix):
-    return [text[len(prefix):] for text in theList]
+    return [text[len(prefix):] if text.startswith(prefix) else text for text in theList ]
+
+def remove_stopwords(theList):
+    return [' '.join([word for word in text.split() if word not in stopset]) for text in theList]
 
 if __name__ == '__main__':
-    train_data = pd.read_csv('train.csv')
-    test_data = pd.read_csv('test.csv')
-    train = list(zip(train_data.Title, remove_prefix(train_data.Team, 'UCM ')))
-    test = list(zip(test_data.Title, remove_prefix(test_data.Team, 'UCM ')))
+    train = pd.read_csv('train.csv')
+    test = pd.read_csv('test.csv')
+    train_data = remove_stopwords(train.Title)
+    #train_data = train.Title
+    train_target = remove_prefix(train.Team, 'UCM ')
+    test_data = remove_stopwords(test.Title)
+    #test_data = test.Title
+    test_target = remove_prefix(test.Team, 'UCM ')
+    train = list(zip(train_data, train_target))
+    test = list(zip(test_data, test_target))
 
+    start_time = time.time()
     cl = NaiveBayesClassifier(train)
-
-    # Classify some text
-    print(cl.classify("SA DRI Pls reboot monitor service"))
-    print(cl.classify("Test"))
-    print(cl.classify("Ticketing Job Dispatcher Reliability for Email Sender is below SLA"))
-    print(cl.classify("[Support] Unknown user who pitched an opportunity on UCM-A"))
-    print(cl.classify("[Support] [UCMA] For the removable tiles the colors of 'change - compared to' doesn't match positivity/negativity of change | UCM000000968815"))
-
     # Compute accuracy
     print("NaiveBayes Accuracy: {0}".format(cl.accuracy(test)))
 
     # Show 10 most informative features
     cl.show_informative_features(10)
     print(cl.informative_features(10))
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
 
-    cl = DecisionTreeClassifier(train)
-    print("DecisionTree Accuracy: {0}".format(cl.accuracy(test)))
-    print(cl.pseudocode())
+    if (not ignoreDT):
+        start_time = time.time()
+        cl = DecisionTreeClassifier(train)
+        print("DecisionTree Accuracy: {0}".format(cl.accuracy(test)))
+        print(cl.pseudocode())
+        elapsed_time = time.time() - start_time
+        print(elapsed_time)
 
-    #cl = MaxEntClassifier(train, algorithm='megam', max_iter=10, trace=0)
-    #print("MaxEnt(megam) Accuracy: {0}".format(cl.accuracy(test)))
+    start_time = time.time()
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.feature_extraction.text import TfidfTransformer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.pipeline import Pipeline
 
-    #cl = MaxEntClassifier(train, algorithm='gis', max_iter=10, trace=0, min_lldelta=0.5)
-    #print("MaxEnt(gis) Accuracy: {0}".format(cl.accuracy(test)))
+    class StemmedCountVectorizer(CountVectorizer):
+        def build_analyzer(self):
+            analyzer = super(StemmedCountVectorizer, self).build_analyzer()
+            return lambda doc: ([stemmer.stem(w) for w in analyzer(doc)])
 
-    from nltk.classify.scikitlearn import SklearnClassifier
-    from sklearn.naive_bayes import MultinomialNB,BernoulliNB
+    from nltk.stem.snowball import SnowballStemmer
+    stemmer = SnowballStemmer("english", ignore_stopwords=True)
+    stemmed_count_vect = StemmedCountVectorizer(stop_words='english')
 
-    MNB_classifier = SklearnClassifier(MultinomialNB())
-    MNB_classifier.train(train)
-    print("MultinomialNB accuracy percent:", nltk.classify.accuracy(MNB_classifier, test))
+    text_clf = Pipeline([('vect', stemmed_count_vect),
+                         ('tfidf', TfidfTransformer()),
+                         ('clf', MultinomialNB()),
+                         ])
 
-    BNB_classifier = SklearnClassifier(BernoulliNB())
-    BNB_classifier.train(train)
-    print("BernoulliNB accuracy percent:", nltk.classify.accuracy(BNB_classifier, test))
+    text_clf.fit(train_data, train_target)
+    predicted = text_clf.predict(test_data)
+    print("MultinomialNB Accuracy: {0}".format(np.mean(predicted == test_target)))
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
+
+    start_time = time.time()
+    from sklearn.linear_model import SGDClassifier
+    text_clf = Pipeline([('vect', stemmed_count_vect),
+                          ('tfidf', TfidfTransformer()),
+                          ('clf', SGDClassifier(loss='hinge', penalty='l2',
+                                                alpha = 1e-3, random_state = 42)),
+                        ])
+    text_clf.fit(train_data, train_target)
+
+    predicted = text_clf.predict(test_data)
+    print("SGD Accuracy: {0}".format(np.mean(predicted == test_target)))
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
 
 
-
-
-
-
+    from sklearn import metrics
+    print(metrics.classification_report(test_target, predicted))
