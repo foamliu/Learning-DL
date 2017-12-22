@@ -47,8 +47,8 @@ def train():
         max_episode_steps=100,
         reward_threshold=0.78,  # optimum = .8196
     )
-    env = gym.make('FrozenLake-v0')
-    #env = gym.make('FrozenLakeNotSlippery-v0')
+    #env = gym.make('FrozenLake-v0')
+    env = gym.make('FrozenLakeNotSlippery-v0')
     env = wrappers.Monitor(env, '/tmp/FrozenLake-experiment-6', force=True)
     learning_rate = 0.81
     discount = 0.96
