@@ -84,10 +84,11 @@ class DCGAN(object):
         dropout = 0.4
         depth = 64+64+64+64
         dim = 7
+        momentum = 0.5
         # In: 100
         # Out: dim x dim x depth
         self.G.add(Dense(dim*dim*depth, input_dim=100))
-        self.G.add(BatchNormalization(momentum=0.9))
+        self.G.add(BatchNormalization(momentum=momentum))
         self.G.add(Activation('relu'))
         self.G.add(Reshape((dim, dim, depth)))
         self.G.add(Dropout(dropout))
@@ -96,16 +97,16 @@ class DCGAN(object):
         # Out: 2*dim x 2*dim x depth/2
         self.G.add(UpSampling2D())
         self.G.add(Conv2DTranspose(int(depth/2), 5, padding='same'))
-        self.G.add(BatchNormalization(momentum=0.9))
+        self.G.add(BatchNormalization(momentum=momentum))
         self.G.add(Activation('relu'))
 
         self.G.add(UpSampling2D())
         self.G.add(Conv2DTranspose(int(depth/4), 5, padding='same'))
-        self.G.add(BatchNormalization(momentum=0.9))
+        self.G.add(BatchNormalization(momentum=momentum))
         self.G.add(Activation('relu'))
 
         self.G.add(Conv2DTranspose(int(depth/8), 5, padding='same'))
-        self.G.add(BatchNormalization(momentum=0.9))
+        self.G.add(BatchNormalization(momentum=momentum))
         self.G.add(Activation('relu'))
 
         # Out: 28 x 28 x 1 grayscale image [0.0,1.0] per pix
