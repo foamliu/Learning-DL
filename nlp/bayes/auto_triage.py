@@ -69,6 +69,8 @@ if __name__ == '__main__':
     text_clf.fit(train_data, train_target)
     predicted = text_clf.predict(test_data)
     print("MultinomialNB Accuracy: {0}".format(np.mean(predicted == test_target)))
+    df = pd.DataFrame(list(zip(test_data, predicted, test_target)))
+    df.to_csv('MB_list.csv', index=False)
     elapsed_time = time.time() - start_time
     print(elapsed_time)
 
@@ -84,7 +86,7 @@ if __name__ == '__main__':
     predicted = text_clf.predict(test_data)
     print("SGD Accuracy: {0}".format(np.mean(predicted == test_target)))
     df = pd.DataFrame(list(zip(test_data, predicted, test_target)))
-    df.to_csv('list.csv', index=False)
+    df.to_csv('SGD_list.csv', index=False)
 
     elapsed_time = time.time() - start_time
     print(elapsed_time)
