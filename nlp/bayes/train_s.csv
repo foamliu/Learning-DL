@@ -1,0 +1,58 @@
+Id,Severity,Status,Title,Create Time,Team,Owner
+52764392,3,RESOLVED,[Support] [UCMA] Opportunites Appearing as Rejected by user thherr,11/28/2017 9:50:11 AM +00:00,UCM Opportunities,yarashwa
+52738199,3,RESOLVED,[Support] UCMA Opportunities: Unable to Change Status at Account Level,11/28/2017 12:31:22 AM +00:00,UCM Opportunities,yarashwa
+52549237,3,RESOLVED,"[Support] UCMA | Accounts Tab showing Error & not loading for user: limackes (code defect, exposure, summary row)",11/24/2017 1:53:27 PM +00:00,UCM Data Visualization Framework,
+52478831,3,RESOLVED,[Support] User is unable to see any data under the manager dashboard.,11/23/2017 6:33:50 PM +00:00,UCM Business Analytics,v-chaspa
+52412036,3,RESOLVED,[Support] UCMA - Opportunities: Build Proposal Excel file will not render with Pitched AND Open Status Selected,11/22/2017 5:32:04 PM +00:00,UCM Opportunities,rany
+52350535,3,RESOLVED,"[Support] Escalating UCMT tickets creates ""undefined"" error",11/21/2017 11:23:54 PM +00:00,UCM Ticketing & Engagement,v-rozag
+52348313,3,RESOLVED,[Support] UCM shows opportunities as pitched - AM did not pitch specified opportunities,11/21/2017 10:36:09 PM +00:00,UCM Opportunities,yarashwa
+52316094,3,RESOLVED,"[Support] UCMA - Multiple BoB Added to Label, but Spend Tile Not Reflecting Change Correctly (code defect, legacy)",11/21/2017 6:04:29 PM +00:00,UCM Data Visualization Framework,lolondon
+52273955,3,RESOLVED,[Support] Emails sent to UCMTCAL auto triage feature not removing user from rotation,11/21/2017 4:42:16 AM +00:00,UCM Ticketing & Engagement,rykelch
+52228481,3,RESOLVED,[Support] [UCMB] Account links are not opening the accounts page (code defect),11/20/2017 2:56:38 PM +00:00,UCM Data Visualization Framework,v-chenan
+51963749,3,RESOLVED,[Support] UCMA error: Account is too large to show in UCMA. (by design),11/16/2017 9:45:35 PM +00:00,UCM Data Visualization Framework,
+51962342,3,RESOLVED,[Support] UCMA Health Check Report Not Showing Data For Selected Account (No Repro),11/16/2017 9:23:09 PM +00:00,UCM Data Visualization Framework,lolondon
+51779366,3,RESOLVED,[Support] UCMA Shared Opportunity Pitches not Rendering Properly in Email,11/14/2017 11:35:18 PM +00:00,UCM Opportunities,yueych
+51772184,3,RESOLVED,[Support] UCMA and UCMC show stale data for account X1457395,11/14/2017 9:54:45 PM +00:00,UCM Account Management A+P,zhama
+51739012,3,RESOLVED,[Support] - Unable to add users  to vTeams in UCM-T,11/14/2017 7:48:59 PM +00:00,UCM Ticketing & Engagement,v-vaagr
+51707558,3,RESOLVED,[Support] [UCMA] Ticket Tab Showing other customers tickets,11/14/2017 1:25:37 PM +00:00,UCM Ticketing & Engagement,roopapu
+51467493,3,RESOLVED,[Support] Unable to download the SLE-I opportunity,11/10/2017 11:29:12 PM +00:00,UCM Opportunities,anyyu
+51466439,3,RESOLVED,[Support] The If condition dropdown for auto triage rules in WOCS post collections queue does not show up.,11/10/2017 11:04:44 PM +00:00,UCM Ticketing & Engagement,v-zehund
+51383585,3,RESOLVED,"[Support] [UCMA] For the removable tiles the colors of ""change - compared to"" doesn't match positivity/negativity of change | UCM000000968815 (by design)",11/9/2017 4:43:27 PM +00:00,UCM Data Visualization Framework,lolondon
+51331404,3,RESOLVED,[Support] UCM-T Customer Detail Error,11/8/2017 10:30:32 PM +00:00,UCM Account Management A+P,v-sshett
+50960121,3,RESOLVED,[Support] Unable to see accounts on UCMB (by design),11/3/2017 8:16:07 PM +00:00,UCM Data Visualization Framework,v-chenan
+50955338,3,RESOLVED,[Support] High QBR Penalty is not showing in UCMA Alerts Tab for the account,11/3/2017 6:47:25 PM +00:00,UCM Ticketing & Engagement,
+50796170,3,RESOLVED,[Support] Unknown user who pitched an opportunity on UCM-A,11/1/2017 6:08:43 PM +00:00,UCM Opportunities,yarashwa
+50714839,1,RESOLVED,[Support] UCM Platform is down - users are unable to access all UCM tools,10/31/2017 4:30:15 PM +00:00,UCM Ticketing & Engagement,roopapu
+50680442,3,RESOLVED,[Support] UCMB Revenue Numbers vs UCMA/Bing Ads data,10/31/2017 12:55:10 AM +00:00,UCM Account Management A+P,
+50662220,3,RESOLVED,[Support] CnR Agent Not Seeing Customer Names in MyQueue (reseller - by design),10/30/2017 7:16:34 PM +00:00,UCM Data Visualization Framework,lolondon
+50475492,3,RESOLVED,"[Support] Attainment Pacing % for the half doesn’t match when comparing the Team view with the Manager’s view (code defect, data issue)",10/26/2017 11:57:42 PM +00:00,UCM Data Visualization Framework,v-chenan
+50464742,3,RESOLVED,[Support] Escalated tickets from Maynard Cabellon have stakeholder issues,10/26/2017 8:53:05 PM +00:00,UCM Ticketing & Engagement,rykelch
+49988195,3,RESOLVED,[Support] [UCMA] User seeing script error loading graphs on feature adoption tab at account level,10/20/2017 12:32:02 PM +00:00,UCM Data Visualization Framework,lolondon
+49585238,3,RESOLVED,[Support] French PPT Builder reports has overlapping slides,10/16/2017 7:40:14 PM +00:00,UCM Data Visualization Framework,wenxs
+49437492,3,RESOLVED,[Support] CnR Users unable to filter by Customer ID,10/13/2017 11:24:51 PM +00:00,UCM Data Visualization Framework,v-chenan
+49216486,3,RESOLVED,[Support] UCMA Data Showing Blank Screen For User,10/10/2017 9:38:51 PM +00:00,UCM Data Visualization Framework,qiywan
+49188762,3,RESOLVED,[Support] [UCMB] Reports that Attainment Pacing data is incorrect,10/10/2017 12:49:26 PM +00:00,UCM Data Visualization Framework,v-vinai
+48777425,3,RESOLVED,[Support] UCMA - New labels can't be applied to XIDs,10/3/2017 11:22:13 PM +00:00,UCM Data Visualization Framework,pradesai
+48328790,3,RESOLVED,[Support] Duplicate Opportunities in UCMA,9/27/2017 9:28:10 PM +00:00,UCM Account Management A+P,
+46982547,3,RESOLVED,[Support] Health Check Report Failures within UCM-A,9/12/2017 6:06:17 PM +00:00,UCM Data Visualization Framework,lolondon
+46462190,1,RESOLVED,[Support] All users unable to access UCM (A or T),9/4/2017 8:52:14 AM +00:00,UCM Daily Shipping,guowu
+46288312,1,RESOLVED,[Support] [UCMT] UCMT Tabs not loading without multiple refresh | UCM000000878680,8/31/2017 9:33:10 PM +00:00,UCM Ticketing & Engagement,rykelch
+46202860,3,RESOLVED,[Support] [UCMB] UCMB showing data for other users | UCM000000876379,8/30/2017 4:51:34 PM +00:00,UCM Data Visualization Framework,satvar
+46105913,3,RESOLVED,"[Support] [UCMT] Unable to click on ""mark as Read"" button in UCM-T when ""select all"" email in communication tab",8/29/2017 3:09:47 PM +00:00,UCM Opportunities,yueych
+46043816,3,RESOLVED,[Support] [UCMT] @Today filter not working for closed tickets at end of day | UCM000000868936,8/28/2017 7:53:13 PM +00:00,UCM Ticketing & Engagement,rykelch
+42313305,3,RESOLVED,[Support] Internal User Voice portals are down and redirecting to UCM portal with an error,7/13/2017 8:59:19 PM +00:00,UCM Data Visualization Framework,lolondon
+41545426,3,RESOLVED,[Support] Discrepancy between chart and grid in attainment pacing report,7/3/2017 11:09:42 PM +00:00,UCM Account Management A+P,
+39591245,2,RESOLVED,[Support]  Bid Management Opportunities no data,6/13/2017 8:38:28 PM +00:00,UCM Opportunities,yarashwa
+39296797,3,RESOLVED,[Support] [UCMT] UCMT not loading in chrome - Javascript error | UCM000000735945,6/9/2017 11:05:13 AM +00:00,UCM Ticketing & Engagement,
+39110899,3,RESOLVED,[Support] UCM-A is not showing opportunities at account level | UCM000000724100,6/6/2017 1:50:27 PM +00:00,UCM Account Management A+P,v-avarma
+38846520,1,RESOLVED,[Support] UCM is inaccessible in all browsers for all users. | UCM000000716471 ,6/2/2017 8:51:20 AM +00:00,UCM Data Visualization Framework,foamliu
+38845193,3,RESOLVED,[Support] UCM - Scorecard report fails when account is associated with a Label,6/2/2017 8:16:08 AM +00:00,UCM Data Visualization Framework,wenxs
+38354480,3,RESOLVED,[Support] Unable to download attachments from all workspaces,5/26/2017 7:20:27 PM +00:00,UCM Account Management A+P,v-sshett
+37769436,3,RESOLVED,[Support] Opportunity activity report showing 0 accepted opportunities,5/18/2017 5:18:17 PM +00:00,UCM Opportunities,yarashwa
+37326671,3,RESOLVED,[Global Support] [UCMT] Unable to open any communications on the Communications tab of ticket,5/11/2017 2:40:09 PM +00:00,UCM Ticketing & Engagement,
+35615515,2,RESOLVED,[Support] Manila CSS team is seeing a 503 error while trying to access UCMT,4/13/2017 12:42:49 AM +00:00,UCM Daily Shipping,lolondon
+34349303,3,RESOLVED,[Support] UI browser scripting error while searching for CIDs,3/31/2017 10:53:08 PM +00:00,UCM Ticketing & Engagement,v-zehund
+30799255,3,RESOLVED,[Support] [UCM] Errors when attaching any type of file,2/2/2017 9:37:45 PM +00:00,UCM Daily Shipping,satvar
+30321313,2,RESOLVED,Global Support - [UI] [UCMA] Bulk uploads via UCMA is failing,1/26/2017 11:57:40 PM +00:00,UCM Account Management A+P,alexanm
+30238107,2,RESOLVED,Global Support -UCM000000536123 - CSS/Tier 1 Tickets not transferring to UCMT,1/25/2017 3:22:36 PM +00:00,UCM Ticketing & Engagement,v-pashe
+30139517,4,RESOLVED,TESTING ICM ticketing process for Support - NOT A VALID Ticket.,1/23/2017 7:43:53 PM +00:00,UCM Ticketing & Engagement,
