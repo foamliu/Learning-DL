@@ -19,10 +19,8 @@ if __name__ == '__main__':
     train = pd.read_csv('train.csv')
     test = pd.read_csv('test_s.csv')
     train_data = remove_stopwords(train.Title)
-    #train_data = train.Title
     train_target = remove_prefix(train.Team, 'UCM ')
     test_data = remove_stopwords(test.Title)
-    #test_data = test.Title
     test_target = remove_prefix(test.Team, 'UCM ')
     train = list(zip(train_data, train_target))
     test = list(zip(test_data, test_target))
@@ -85,7 +83,7 @@ if __name__ == '__main__':
 
     predicted = text_clf.predict(test_data)
     print("SGD Accuracy: {0}".format(np.mean(predicted == test_target)))
-    df = pd.DataFrame(list(zip(test_data, predicted, test_target)))
+    df = pd.DataFrame(list(zip(test.Id, test_data, predicted, test_target)))
     df.to_csv('SGD_list.csv', index=False)
 
     elapsed_time = time.time() - start_time
