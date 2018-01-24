@@ -17,7 +17,7 @@ def remove_stopwords(theList):
 
 if __name__ == '__main__':
     train = pd.read_csv('train.csv')
-    test = pd.read_csv('test_s.csv')
+    test = pd.read_csv('test.csv')
     train_data = remove_stopwords(train.Title)
     train_target = remove_prefix(train.Team, 'UCM ')
     test_data = remove_stopwords(test.Title)
