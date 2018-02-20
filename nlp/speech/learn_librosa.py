@@ -3,7 +3,9 @@ import librosa
 import librosa.display
 import numpy as np
 
-y, sr = librosa.load(librosa.util.example_audio_file())
+file = '/Users/yangliu/code/virtualads/web/video/audio.mp3'
+#y, sr = librosa.load(librosa.util.example_audio_file())
+y, sr = librosa.load(file)
 librosa.output.write_wav('file_trim_5s.wav', y, sr)
 print(sr)
 print(len(y))

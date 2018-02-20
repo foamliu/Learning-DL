@@ -101,14 +101,13 @@ if __name__ == '__main__':
 
     fname = 'data.pkl'
 
+    images, labels = read_data(file)
+
     if os.path.isfile(fname):
-        with open(fname, 'r', encoding="utf-8") as input:
+        with open(fname, 'r') as input:
             X_tsne = pickle.load(input)
-            labels = pickle.load(input)
 
     else:
-
-        images, labels = read_data(file)
 
         X = images
 
@@ -117,9 +116,8 @@ if __name__ == '__main__':
 
         X_tsne = tsne.fit_transform(X)
 
-        with open(fname, 'wb', encoding="utf-8") as output:
+        with open(fname, 'wb') as output:
             pickle.dump(X_tsne, output)
-            pickle.dump(labels, output)
 
     t0 = time()
     plot_embedding(X_tsne,
