@@ -1,0 +1,11 @@
+python3 faceswap.py extract -i ./faceswap/photo/liuyang -o ./faceswap/data/liuyang
+python3 faceswap.py extract -i ./faceswap/photo/huge -o ./faceswap/data/huge
+
+python3 faceswap.py train -A ./faceswap/data/huge -B ./faceswap/data/liuyang -m ./faceswap/models/
+
+
+ffmpeg -i /Users/yangliu/code/virtualads/web/video/Game_Of_Hunting_EP6_new.mp4 ./faceswap/photo/input/video-frame-%d.png
+
+python3 faceswap.py convert -i ./faceswap/photo/input/ -o ./faceswap/photo/output/ -m ./faceswap/models/
+
+ffmpeg -i video-frame-%d.png -c:v libx264 -vf "fps=25,format=yuv420p" /Users/yangliu/code/virtualads/web/video/huge2liuyang.mp4
