@@ -4,10 +4,6 @@
 File: face.py
 Description: Face model for Python SDK Sample.
 """
-import wx
-
-import util
-
 
 class Rect(object):
     """Face Rectangle."""

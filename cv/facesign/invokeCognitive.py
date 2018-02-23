@@ -1,5 +1,6 @@
 
 import cognitive_face as CF
+from model import Face
 
 KEY = 'cc0014b6b1934e2a92cd32c21de43fdb'  # Replace with a valid subscription key (keeping the quotes in place).
 CF.Key.set(KEY)
