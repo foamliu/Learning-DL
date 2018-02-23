@@ -11,5 +11,11 @@ CF.BaseUrl.set('https://westcentralus.api.cognitive.microsoft.com/face/v1.0/')
 
 # You can use this example JPG or replace the URL below with your own URL to a JPEG image.
 img_url = 'http://13.65.250.1/image/facesign_0.png'
-faces = CF.face.detect(img_url)
+attributes = (
+    'age,gender,headPose,smile,facialHair,glasses,emotion,hair,'
+    'makeup,occlusion,accessories,blur,exposure,noise'
+)
+res = CF.face.detect(img_url, False, False, attributes)
+faces = [model.Face(face, img_url) for face in res]
+print('{} face(s) has been detected.'.format(len(res)))
 print(faces)
