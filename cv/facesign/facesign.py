@@ -42,8 +42,6 @@ class App:
             frame_idx = frame_idx + 1
             time.sleep(5) #secs
 
-            break
-
         print("Frame count: %d" %  frame_idx)
 
         self.cap.release()
