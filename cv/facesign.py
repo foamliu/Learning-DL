@@ -1,6 +1,7 @@
 
 from __future__ import print_function
 import cv2
+from common import anorm2, draw_str
 import itertools
 
 #https://github.com/Microsoft/Cognitive-Face-Python
@@ -30,11 +31,14 @@ class App:
             cv2.imshow('frame', vis)
             self.out.write(vis)
 
+            cv2.imwrite('image/facesign_%d.png' % frame_idx, frame)
             frame_idx = frame_idx + 1
 
             ch = cv2.waitKey(1)
             if ch == 27:
                 break
+
+        print("Frame count: %d" %  frame_idx)
 
         self.cap.release()
         self.out.release()
