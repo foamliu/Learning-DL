@@ -1,8 +1,13 @@
 
 from __future__ import print_function
-import numpy as np
 import cv2
 import itertools
+
+#https://github.com/Microsoft/Cognitive-Face-Python
+endpoint = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0'
+key1 = 'cc0014b6b1934e2a92cd32c21de43fdb'
+key2 = '93fc5ff7126641ab930a0a0568d75d09'
+
 
 class App:
     def __init__(self):
