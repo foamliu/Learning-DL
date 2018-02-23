@@ -1,48 +1,55 @@
 
-from __future__ import print_function
+import cognitive_face as CF
 import cv2
-from common import anorm2, draw_str
-import itertools
+import time
+import json
 
 #https://github.com/Microsoft/Cognitive-Face-Python
-endpoint = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0'
+endpoint = 'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/'
 key1 = 'cc0014b6b1934e2a92cd32c21de43fdb'
 key2 = '93fc5ff7126641ab930a0a0568d75d09'
-
+attributes = (
+    'age,gender,headPose,smile,facialHair,glasses,emotion,hair,'
+    'makeup,occlusion,accessories,blur,exposure,noise'
+)
 
 class App:
     def __init__(self):
-        self.cap = cv2.VideoCapture('video/facesign.mp4')
-        fourcc = cv2.VideoWriter_fourcc(*'MPEG')
-        self.out = cv2.VideoWriter('video/facesign_output.avi', fourcc, 30.0, (544, 960))
+        self.cap = cv2.VideoCapture('../video/facesign.mp4')
+
+        CF.Key.set(key1)
+        # If you need to, you can change your base API url with:
+        CF.BaseUrl.set(endpoint)
 
     def run(self):
         frame_idx = 0
-
-        for _ in itertools.repeat(None, frame_idx):
-            _, _ = self.cap.read()
 
         while self.cap.isOpened():
             success, frame = self.cap.read()
             if not success:
                 break
 
-            vis = frame.copy()
-            cv2.imshow('frame', vis)
-            self.out.write(vis)
+            path = '../image/facesign_%d.png' % frame_idx
+            cv2.imwrite(path, frame)
+            print(path)
 
-            cv2.imwrite('image/facesign_%d.png' % frame_idx, frame)
+            faces = CF.face.detect(path, False, False, attributes)
+            frame_data.append({'frame_idx': frame_idx, 'faces': faces})
+
+            print('frame_idx: %d' % frame_idx)
+            print(faces)
+
             frame_idx = frame_idx + 1
+            time.sleep(5) #secs
 
-            ch = cv2.waitKey(1)
-            if ch == 27:
-                break
+            break
 
         print("Frame count: %d" %  frame_idx)
 
         self.cap.release()
-        self.out.release()
-        cv2.destroyAllWindows()
 
 if __name__ == '__main__':
+    frame_data = []
     App().run()
+    with open('frame_data.json', 'w') as output:
+        json.dump(frame_data, output, sort_keys=True, indent=4)
